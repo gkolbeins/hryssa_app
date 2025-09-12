@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart'; // þetta er næsti skjár sem við förum í eftir "login"
+import 'dashboard_screen.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -34,6 +34,7 @@ class StartScreen extends StatelessWidget {
                     labelText: 'Netfang',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
                 TextField(

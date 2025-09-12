@@ -11,15 +11,32 @@ class MareItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(mare.name),
-      subtitle: Text('${mare.isNumber} – ${mare.location}'),
+      subtitle: Text(
+        mare.extraNumber1 != null && mare.extraNumber1!.isNotEmpty
+          ? '${mare.location} – ${mare.extraNumber1}'
+          : mare.location,
+      ),
+
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (mare.isPregnant)
-            const Text('✔', style: TextStyle(color: Colors.green, fontSize: 16)),
+            const Icon(
+              Icons.check,
+                color: Color.fromARGB(255, 10, 95, 13),
+                size: 18,
+            ),
+
           const SizedBox(width: 8),
           if (mare.needsVet)
-            const Text('⚕', style: TextStyle(color: Colors.pink, fontSize: 16)),
+            Container(
+              width: 12,
+              height: 12,
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+            ),
         ],
       ),
       onTap: () => onTap(mare),

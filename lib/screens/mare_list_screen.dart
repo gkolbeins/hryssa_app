@@ -1,3 +1,7 @@
+
+// FYRRI ÚTGÁFA af MareListScreen (án leitar)
+// Geymt til vara, ekki í notkun núna
+
 import 'package:flutter/material.dart';
 import '../models/mare.dart';
 import '../widgets/mare_item.dart';

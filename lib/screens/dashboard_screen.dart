@@ -13,6 +13,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _showList = true;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   final List<Mare> _mares = [
     Mare(
@@ -20,6 +22,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       name: 'Spóla frá Hraunbæ',
       isNumber: 'IS2008285431',
       location: 'Nykhóll',
+      owner: 'Anna Jónsdóttir',
+      phone: '5551234',
+      email: 'anna@example.com',
     ),
     Mare(
       id: '2',
@@ -27,6 +32,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       isNumber: 'IS2019285633',
       location: 'Eyjarhólar',
       needsVet: true,
+      owner: 'Guðrún Ósk',
+      phone: '5554321',
+      email: 'gudrun@example.com',
     ),
   ];
 
@@ -52,8 +60,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _openMareDetail(Mare mare) {
-    Navigator.of(context).push(
+  void _openMareDetail(Mare mare) async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => MareDetailScreen(
           mare: mare,
@@ -89,16 +97,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          labelText: 'Leita...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildMareList() {
+    final filtered = _mares.where((mare) {
+      final query = _searchQuery.toLowerCase();
+      return mare.name.toLowerCase().contains(query) ||
+          mare.isNumber.toLowerCase().contains(query) ||
+          (mare.extraNumber1?.toLowerCase().contains(query) ?? false) ||
+          (mare.extraNumber2?.toLowerCase().contains(query) ?? false) ||
+          (mare.microchip?.toLowerCase().contains(query) ?? false) ||
+          (mare.owner?.toLowerCase().contains(query) ?? false) ||
+          (mare.phone?.toLowerCase().contains(query) ?? false) ||
+          (mare.email?.toLowerCase().contains(query) ?? false);
+    }).toList();
+
+    if (filtered.isEmpty) {
+      return const Expanded(
+        child: Center(child: Text('Ekkert fannst')),
+      );
+    }
+
+    return Expanded(
+      child: ListView.builder(
+        itemCount: filtered.length,
+        itemBuilder: (ctx, i) => MareItem(
+          mare: filtered[i],
+          onTap: _openMareDetail,
+        ),
+      ),
+    );
+  }
+
   Widget _buildContent() {
     if (_showList) {
-      return Expanded(
-        child: ListView.builder(
-          itemCount: _mares.length,
-          itemBuilder: (ctx, i) => MareItem(
-            mare: _mares[i],
-            onTap: _openMareDetail,
-          ),
-        ),
+      return Column(
+        children: [
+          _buildSearchField(),
+          const SizedBox(height: 12),
+          _buildMareList(),
+        ],
       );
     } else {
       return Expanded(
@@ -118,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 16),
           _buildTopButtons(),
           const SizedBox(height: 16),
-          _buildContent(),
+          Expanded(child: _buildContent()),
         ],
       ),
     );

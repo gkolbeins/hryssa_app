@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hryssa_app/widgets/mare_image.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/mare.dart';
+import '../widgets/mare_image.dart';
 
 class MareFormScreen extends StatefulWidget {
   final Function(Mare) onSave;
@@ -24,13 +24,13 @@ class _MareFormScreenState extends State<MareFormScreen> {
   final _nameController = TextEditingController();
   final _isNumberController = TextEditingController();
   final _locationController = TextEditingController();
-  final _extraNumber1Controller = TextEditingController();
-  final _extraNumber2Controller = TextEditingController();
-  final _microchipController = TextEditingController();
-  final _ownerController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _commentsController = TextEditingController();
+  final _otherInfo1Controller = TextEditingController();
+  final _otherInfo2Controller = TextEditingController();
+  final _chipIdController = TextEditingController();
+  final _ownerNameController = TextEditingController();
+  final _ownerPhoneController = TextEditingController();
+  final _ownerEmailController = TextEditingController();
+  final _notesController = TextEditingController();
 
   File? _selectedImage;
 
@@ -40,16 +40,18 @@ class _MareFormScreenState extends State<MareFormScreen> {
     final mare = widget.existingMare;
     if (mare != null) {
       _nameController.text = mare.name;
-      _isNumberController.text = mare.isNumber;
-      _locationController.text = mare.location;
-      _extraNumber1Controller.text = mare.extraNumber1 ?? '';
-      _extraNumber2Controller.text = mare.extraNumber2 ?? '';
-      _microchipController.text = mare.microchip ?? '';
-      _ownerController.text = mare.owner ?? '';
-      _phoneController.text = mare.phone ?? '';
-      _emailController.text = mare.email ?? '';
-      _commentsController.text = mare.comments ?? '';
-      if (mare.imagePath != null) _selectedImage = File(mare.imagePath!);
+      _isNumberController.text = mare.isNumber ?? '';
+      _locationController.text = mare.location ?? '';
+      _otherInfo1Controller.text = mare.otherInfo1 ?? '';
+      _otherInfo2Controller.text = mare.otherInfo2 ?? '';
+      _chipIdController.text = mare.chipId ?? '';
+      _ownerNameController.text = mare.ownerName ?? '';
+      _ownerPhoneController.text = mare.ownerPhone ?? '';
+      _ownerEmailController.text = mare.ownerEmail ?? '';
+      _notesController.text = mare.notes ?? '';
+      if (mare.imagePath != null) {
+        _selectedImage = File(mare.imagePath!);
+      }
     }
   }
 
@@ -82,25 +84,56 @@ class _MareFormScreenState extends State<MareFormScreen> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
+    final isEditing = widget.existingMare != null;
+
     final mare = Mare(
-      id: widget.existingMare?.id ?? DateTime.now().toString(),
+      id: widget.existingMare?.id ?? DateTime.now().toIso8601String(),
+      ownerId: widget.existingMare?.ownerId ?? 'TEMP_OWNER_ID',
+      createdAt: widget.existingMare?.createdAt ?? DateTime.now(),
+
       name: _nameController.text,
-      isNumber: _isNumberController.text,
-      location: _locationController.text,
-      extraNumber1:
-          _extraNumber1Controller.text.isNotEmpty ? _extraNumber1Controller.text : null,
-      extraNumber2:
-          _extraNumber2Controller.text.isNotEmpty ? _extraNumber2Controller.text : null,
-      microchip:
-          _microchipController.text.isNotEmpty ? _microchipController.text : null,
-      imagePath: _selectedImage?.path,
-      isPregnant: widget.existingMare?.isPregnant ?? false,
+      isNumber: _isNumberController.text.isNotEmpty
+          ? _isNumberController.text
+          : null,
+      chipId: _chipIdController.text.isNotEmpty
+          ? _chipIdController.text
+          : null,
+
+      currentPaddockId: widget.existingMare?.currentPaddockId,
+      currentStallionId: widget.existingMare?.currentStallionId,
+
       needsVet: widget.existingMare?.needsVet ?? false,
-      owner: _ownerController.text.isNotEmpty ? _ownerController.text : null,
-      phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
-      email: _emailController.text.isNotEmpty ? _emailController.text : null,
-      comments: _commentsController.text.isNotEmpty ? _commentsController.text : null,
-      confirmedPregnancyDate: widget.existingMare?.confirmedPregnancyDate,
+      pregnancyConfirmed:
+          widget.existingMare?.pregnancyConfirmed ?? false,
+      pregnancyConfirmedAt:
+          widget.existingMare?.pregnancyConfirmedAt,
+
+      arrivalDate: widget.existingMare?.arrivalDate,
+
+      ownerName: _ownerNameController.text.isNotEmpty
+          ? _ownerNameController.text
+          : null,
+      ownerPhone: _ownerPhoneController.text.isNotEmpty
+          ? _ownerPhoneController.text
+          : null,
+      ownerEmail: _ownerEmailController.text.isNotEmpty
+          ? _ownerEmailController.text
+          : null,
+
+      notes:
+          _notesController.text.isNotEmpty ? _notesController.text : null,
+      otherInfo1: _otherInfo1Controller.text.isNotEmpty
+          ? _otherInfo1Controller.text
+          : null,
+      otherInfo2: _otherInfo2Controller.text.isNotEmpty
+          ? _otherInfo2Controller.text
+          : null,
+
+      location: _locationController.text.isNotEmpty
+          ? _locationController.text
+          : null,
+
+      imagePath: _selectedImage?.path,
     );
 
     widget.onSave(mare);
@@ -114,10 +147,6 @@ class _MareFormScreenState extends State<MareFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Breyta hryssu' : 'Skrá nýja hryssu'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -125,17 +154,11 @@ class _MareFormScreenState extends State<MareFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              ///mynd og nafn
               _card(Column(
                 children: [
                   GestureDetector(
                     onTap: _pickImage,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _selectedImage != null
-                          ? MareImage(imagePath: _selectedImage?.path)
-                          : MareImage(imagePath: _selectedImage?.path),
-                    ),
+                    child: MareImage(imagePath: _selectedImage?.path),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -147,79 +170,64 @@ class _MareFormScreenState extends State<MareFormScreen> {
                 ],
               )),
 
-              ///grunnuppl
               _card(Column(
                 children: [
                   TextFormField(
                     controller: _isNumberController,
                     decoration: const InputDecoration(labelText: 'IS-númer'),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Vinsamlegast sláðu inn IS-númer' : null,
                   ),
                   TextFormField(
                     controller: _locationController,
                     decoration: const InputDecoration(labelText: 'Staðsetning'),
                   ),
                   TextFormField(
-                    controller: _microchipController,
+                    controller: _chipIdController,
                     decoration: const InputDecoration(labelText: 'Örmerki'),
-                    keyboardType: TextInputType.number,
                   ),
                   TextFormField(
-                    controller: _extraNumber1Controller,
-                    decoration: const InputDecoration(labelText: 'Annað nr. 1'),
+                    controller: _otherInfo1Controller,
+                    decoration:
+                        const InputDecoration(labelText: 'Annað nr. 1'),
                   ),
                   TextFormField(
-                    controller: _extraNumber2Controller,
-                    decoration: const InputDecoration(labelText: 'Annað nr. 2'),
+                    controller: _otherInfo2Controller,
+                    decoration:
+                        const InputDecoration(labelText: 'Annað nr. 2'),
                   ),
                 ],
               )),
 
-              ///eigandi og uppl
               _card(Column(
                 children: [
                   TextFormField(
-                    controller: _ownerController,
+                    controller: _ownerNameController,
                     decoration: const InputDecoration(labelText: 'Eigandi'),
                   ),
                   TextFormField(
-                    controller: _phoneController,
+                    controller: _ownerPhoneController,
                     decoration: const InputDecoration(labelText: 'Sími'),
-                    keyboardType: TextInputType.phone,
                   ),
                   TextFormField(
-                    controller: _emailController,
+                    controller: _ownerEmailController,
                     decoration: const InputDecoration(labelText: 'Netfang'),
-                    keyboardType: TextInputType.emailAddress,
                   ),
                   TextFormField(
-                    controller: _commentsController,
-                    decoration: const InputDecoration(labelText: 'Athugasemdir'),
+                    controller: _notesController,
+                    decoration:
+                        const InputDecoration(labelText: 'Athugasemdir'),
                     maxLines: 3,
                   ),
                 ],
               )),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
-              ///takkar
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Hætta við'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _submit,
-                      child: const Text('Vista'),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Vista'),
+                ),
               ),
             ],
           ),

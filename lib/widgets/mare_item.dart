@@ -13,6 +13,10 @@ class MareItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtitle = mare.otherInfo1 != null && mare.otherInfo1!.isNotEmpty
+        ? '${mare.location ?? ''} – ${mare.otherInfo1}'
+        : (mare.location ?? '');
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () => onTap(mare),
@@ -44,17 +48,16 @@ class MareItem extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    mare.extraNumber1 != null &&
-                            mare.extraNumber1!.isNotEmpty
-                        ? '${mare.location} – ${mare.extraNumber1}'
-                        : mare.location,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.black54,
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -62,7 +65,7 @@ class MareItem extends StatelessWidget {
             ///status tákn
             Row(
               children: [
-                if (mare.isPregnant)
+                if (mare.pregnancyConfirmed)
                   const Icon(
                     Icons.check_circle,
                     color: Color(0xFF2E7D32),

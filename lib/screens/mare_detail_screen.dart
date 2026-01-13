@@ -1,7 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hryssa_app/widgets/mare_image.dart';
 import '../models/mare.dart';
+import '../widgets/mare_image.dart';
 import 'mare_form_screen.dart';
 
 class MareDetailScreen extends StatefulWidget {
@@ -21,23 +20,23 @@ class MareDetailScreen extends StatefulWidget {
 }
 
 class _MareDetailScreenState extends State<MareDetailScreen> {
-  late bool _isPregnant;
+  late bool _pregnancyConfirmed;
   late bool _needsVet;
-  DateTime? _confirmedPregnancyDate;
+  DateTime? _pregnancyConfirmedAt;
 
   @override
   void initState() {
     super.initState();
-    _isPregnant = widget.mare.isPregnant;
+    _pregnancyConfirmed = widget.mare.pregnancyConfirmed;
     _needsVet = widget.mare.needsVet;
-    _confirmedPregnancyDate = widget.mare.confirmedPregnancyDate;
+    _pregnancyConfirmedAt = widget.mare.pregnancyConfirmedAt;
   }
 
-  void _togglePregnant(bool value) {
+  void _togglePregnancy(bool value) {
     setState(() {
-      _isPregnant = value;
-      _confirmedPregnancyDate =
-          value ? (_confirmedPregnancyDate ?? DateTime.now()) : null;
+      _pregnancyConfirmed = value;
+      _pregnancyConfirmedAt =
+          value ? (_pregnancyConfirmedAt ?? DateTime.now()) : null;
     });
   }
 
@@ -47,12 +46,15 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
 
   void _goBackWithUpdateIfNeeded() {
     final updated = widget.mare.copyWith(
-      isPregnant: _isPregnant,
+      pregnancyConfirmed: _pregnancyConfirmed,
+      pregnancyConfirmedAt: _pregnancyConfirmedAt,
       needsVet: _needsVet,
-      confirmedPregnancyDate: _confirmedPregnancyDate,
     );
 
-    if (updated != widget.mare) widget.onUpdate(updated);
+    if (updated != widget.mare) {
+      widget.onUpdate(updated);
+    }
+
     Navigator.of(context).pop();
   }
 
@@ -135,12 +137,11 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
     final mare = widget.mare;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Hryssa frá bæ')),
+      appBar: AppBar(title: const Text('Upplýsingar um hryssu')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            ///nafn
             Text(
               mare.name,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -148,40 +149,39 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
             ),
             const SizedBox(height: 12),
 
-            ///mynd
-            if (mare.imagePath != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: MareImage(imagePath: mare.imagePath),
-              ),
+            MareImage(imagePath: mare.imagePath),
 
-            ///uppl um eiganda
             _card(Column(
               children: [
-                _infoRow('IS-númer', mare.isNumber),
-                _infoRow('Staðsetning', mare.location),
-                if (mare.owner != null) _infoRow('Eigandi', mare.owner!),
-                if (mare.phone != null) _infoRow('Sími', mare.phone!),
-                if (mare.email != null) _infoRow('Netfang', mare.email!),
+                if (mare.isNumber != null)
+                  _infoRow('IS-númer', mare.isNumber!),
+                if (mare.location != null)
+                  _infoRow('Staðsetning', mare.location!),
+                if (mare.ownerName != null)
+                  _infoRow('Eigandi', mare.ownerName!),
+                if (mare.ownerPhone != null)
+                  _infoRow('Sími', mare.ownerPhone!),
+                if (mare.ownerEmail != null)
+                  _infoRow('Netfang', mare.ownerEmail!),
               ],
             )),
 
-            ///staða
             _card(Column(
               children: [
                 SwitchListTile(
                   title: const Text('Staðfest fyl'),
-                  value: _isPregnant,
+                  value: _pregnancyConfirmed,
                   activeThumbColor: Colors.green,
-                  onChanged: _togglePregnant,
+                  onChanged: _togglePregnancy,
                 ),
-                if (_isPregnant && _confirmedPregnancyDate != null)
+                if (_pregnancyConfirmed && _pregnancyConfirmedAt != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      'Staðfest ${_confirmedPregnancyDate!.day}.'
-                      '${_confirmedPregnancyDate!.month}.'
-                      '${_confirmedPregnancyDate!.year}',
+                      'Staðfest '
+                      '${_pregnancyConfirmedAt!.day}.'
+                      '${_pregnancyConfirmedAt!.month}.'
+                      '${_pregnancyConfirmedAt!.year}',
                       style: const TextStyle(fontSize: 13),
                     ),
                   ),
@@ -194,29 +194,20 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
               ],
             )),
 
-            ///athugasemdir
-            if (mare.comments != null && mare.comments!.isNotEmpty)
+            if (mare.notes != null && mare.notes!.isNotEmpty)
               _card(Text(
-                mare.comments!,
+                mare.notes!,
                 style: const TextStyle(fontStyle: FontStyle.italic),
               )),
 
             const SizedBox(height: 24),
 
-            ///takkar
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _openEditMare,
                     child: const Text('Breyta'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _goBackWithUpdateIfNeeded,
-                    child: const Text('Til baka'),
                   ),
                 ),
               ],
@@ -227,8 +218,10 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
             TextButton.icon(
               onPressed: _confirmDelete,
               icon: const Icon(Icons.delete, color: Colors.red),
-              label: const Text('Eyða hryssu',
-                  style: TextStyle(color: Colors.red)),
+              label: const Text(
+                'Eyða hryssu',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         ),

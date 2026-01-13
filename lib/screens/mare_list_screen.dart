@@ -15,17 +15,21 @@ class _MareListScreenState extends State<MareListScreen> {
   final List<Mare> _mares = [
     Mare(
       id: '1',
+      ownerId: 'dummy-owner',
+      createdAt: DateTime.now(),
       name: 'Spóla frá Hraunbæ',
       isNumber: 'IS2008285431',
       location: 'Nykhóll',
+      pregnancyConfirmed: true,
     ),
     Mare(
       id: '2',
+      ownerId: 'dummy-owner',
+      createdAt: DateTime.now(),
       name: 'Aþena frá Nykhól',
       isNumber: 'IS2019285633',
       location: 'Eyjarhólar',
       needsVet: true,
-      isPregnant: true,
     ),
   ];
 
@@ -34,16 +38,12 @@ class _MareListScreenState extends State<MareListScreen> {
   List<Mare> get _filteredMares {
     if (_searchQuery.isEmpty) return _mares;
 
+    final query = _searchQuery.toLowerCase();
+
     return _mares.where((mare) {
-      return mare.name
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          mare.isNumber
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          mare.location
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
+      return mare.name.toLowerCase().contains(query) ||
+          (mare.isNumber?.toLowerCase().contains(query) ?? false) ||
+          (mare.location?.toLowerCase().contains(query) ?? false);
     }).toList();
   }
 
@@ -84,14 +84,14 @@ class _MareListScreenState extends State<MareListScreen> {
     final newMare = await Navigator.of(context).push<Mare>(
       MaterialPageRoute(
         builder: (ctx) => MareFormScreen(
-          onSave: (mare) {
-            Navigator.of(ctx).pop(mare);
-          },
+          onSave: (mare) => Navigator.of(ctx).pop(mare),
         ),
       ),
     );
 
-    if (newMare != null) _addNewMare(newMare);
+    if (newMare != null) {
+      _addNewMare(newMare);
+    }
   }
 
   @override
@@ -102,7 +102,7 @@ class _MareListScreenState extends State<MareListScreen> {
       ),
       body: Column(
         children: [
-          ///leit
+          /// Leit
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -111,14 +111,12 @@ class _MareListScreenState extends State<MareListScreen> {
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+                setState(() => _searchQuery = value);
               },
             ),
           ),
 
-          ///listi
+          /// Listi
           Expanded(
             child: _filteredMares.isEmpty
                 ? const Center(
@@ -138,7 +136,7 @@ class _MareListScreenState extends State<MareListScreen> {
         ],
       ),
 
-      ///skrá nýja hryssu takki
+      /// Skrá nýja hryssu
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openNewMareForm,
         label: const Text('Skrá nýja hryssu'),

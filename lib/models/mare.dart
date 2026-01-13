@@ -1,71 +1,99 @@
 class Mare {
   final String id;
+  final String ownerId;
+  final DateTime createdAt;
   final String name;
-  final String isNumber;
-  final String location;
-  final String? extraNumber1;
-  final String? extraNumber2;
-  final String? microchip;
-  final String? imagePath;
-  final bool isPregnant;
+  final String? isNumber;
+  final String? chipId;
+  final String? currentPaddockId;
+  final String? currentStallionId;
   final bool needsVet;
-  final String? owner;
-  final String? phone;
-  final String? email;
+  final bool pregnancyConfirmed;
+  final DateTime? pregnancyConfirmedAt;
+  final DateTime? arrivalDate;
+  final String? ownerName;
+  final String? ownerPhone;
+  final String? ownerEmail;
+  final String? notes;
+  final String? otherInfo1;
+  final String? otherInfo2;
+  final String? location;
+  final String? imagePath;
   final String? comments;
-  final DateTime? confirmedPregnancyDate;
 
   Mare({
     required this.id,
+    required this.ownerId,
+    required this.createdAt,
     required this.name,
-    required this.isNumber,
-    required this.location,
-    this.extraNumber1,
-    this.extraNumber2,
-    this.microchip,
-    this.imagePath,
-    this.isPregnant = false,
+    this.isNumber,
+    this.chipId,
+    this.currentPaddockId,
+    this.currentStallionId,
     this.needsVet = false,
-    this.owner,
-    this.phone,
-    this.email,
-    this.comments,
-    this.confirmedPregnancyDate,
+    this.pregnancyConfirmed = false,
+    this.pregnancyConfirmedAt,
+    this.arrivalDate,
+    this.ownerName,
+    this.ownerPhone,
+    this.ownerEmail,
+    this.notes,
+    this.otherInfo1,
+    this.otherInfo2,
+    this.location,
+    this.imagePath,
+    this.comments, required String phone,
   });
 
-  Mare copyWith({
-    String? id,
-    String? name,
-    String? isNumber,
-    String? location,
-    String? extraNumber1,
-    String? extraNumber2,
-    String? microchip,
-    String? imagePath,
-    bool? isPregnant,
-    bool? needsVet,
-    String? owner,
-    String? phone,
-    String? email,
-    String? comments,
-    DateTime? confirmedPregnancyDate,
-  }) {
+  ///supabase mapping
+  factory Mare.fromMap(Map<String, dynamic> map) {
     return Mare(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      isNumber: isNumber ?? this.isNumber,
-      location: location ?? this.location,
-      extraNumber1: extraNumber1 ?? this.extraNumber1,
-      extraNumber2: extraNumber2 ?? this.extraNumber2,
-      microchip: microchip ?? this.microchip,
-      imagePath: imagePath ?? this.imagePath,
-      isPregnant: isPregnant ?? this.isPregnant,
-      needsVet: needsVet ?? this.needsVet,
-      owner: owner ?? this.owner,
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
-      comments: comments ?? this.comments,
-      confirmedPregnancyDate: confirmedPregnancyDate ?? this.confirmedPregnancyDate,
+      id: map['id'],
+      ownerId: map['owner_id'],
+      createdAt: DateTime.parse(map['created_at']),
+      name: map['name'],
+      isNumber: map['is_number'],
+      chipId: map['chip_id'],
+      currentPaddockId: map['current_paddock_id'],
+      currentStallionId: map['current_stallion_id'],
+      needsVet: map['needs_vet'] ?? false,
+      pregnancyConfirmed: map['pregnancy_confirmed'] ?? false,
+      pregnancyConfirmedAt: map['pregnancy_confirmed_at'] != null
+          ? DateTime.parse(map['pregnancy_confirmed_at'])
+          : null,
+      arrivalDate: map['arrival_date'] != null
+          ? DateTime.parse(map['arrival_date'])
+          : null,
+      ownerName: map['owner_name'],
+      ownerPhone: map['owner_phone'],
+      ownerEmail: map['owner_email'],
+      notes: map['notes'],
+      otherInfo1: map['other_info_1'],
+      otherInfo2: map['other_info_2'], phone: '',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'owner_id': ownerId,
+      'name': name,
+      'is_number': isNumber,
+      'chip_id': chipId,
+      'current_paddock_id': currentPaddockId,
+      'current_stallion_id': currentStallionId,
+      'needs_vet': needsVet,
+      'pregnancy_confirmed': pregnancyConfirmed,
+      'pregnancy_confirmed_at':
+          pregnancyConfirmedAt?.toIso8601String(),
+      'arrival_date': arrivalDate?.toIso8601String(),
+      'owner_name': ownerName,
+      'owner_phone': ownerPhone,
+      'owner_email': ownerEmail,
+      'notes': notes,
+      'other_info_1': otherInfo1,
+      'other_info_2': otherInfo2,
+      'created_at': createdAt.toIso8601String(),
+    };
   }
 }

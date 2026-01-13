@@ -1,3 +1,5 @@
+//hluti af upphaflegri hönnun, dashboard_sreen er ekki í nokun núna
+
 import 'package:flutter/material.dart';
 import '../models/mare.dart';
 import '../widgets/mare_item.dart';

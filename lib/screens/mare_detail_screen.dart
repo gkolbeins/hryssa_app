@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hryssa_app/widgets/mare_image.dart';
 import '../models/mare.dart';
 import 'mare_form_screen.dart';
 
@@ -151,11 +152,7 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
             if (mare.imagePath != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(mare.imagePath!),
-                  height: 160,
-                  fit: BoxFit.cover,
-                ),
+                child: MareImage(imagePath: mare.imagePath),
               ),
 
             ///uppl um eiganda

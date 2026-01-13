@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hryssa_app/widgets/mare_image.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/mare.dart';
 
@@ -132,12 +133,8 @@ class _MareFormScreenState extends State<MareFormScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: _selectedImage != null
-                          ? Image.file(_selectedImage!, height: 160, fit: BoxFit.cover)
-                          : Image.asset(
-                              'assets/images/dummy_mare.png',
-                              height: 160,
-                              fit: BoxFit.cover,
-                            ),
+                          ? MareImage(imagePath: _selectedImage?.path)
+                          : MareImage(imagePath: _selectedImage?.path),
                     ),
                   ),
                   const SizedBox(height: 12),

@@ -1,7 +1,3 @@
-
-// FYRRI ÚTGÁFA af MareListScreen (án leitar)
-// Geymt til vara, ekki í notkun núna
-
 import 'package:flutter/material.dart';
 import '../models/mare.dart';
 import '../widgets/mare_item.dart';
@@ -29,8 +25,27 @@ class _MareListScreenState extends State<MareListScreen> {
       isNumber: 'IS2019285633',
       location: 'Eyjarhólar',
       needsVet: true,
+      isPregnant: true,
     ),
   ];
+
+  String _searchQuery = '';
+
+  List<Mare> get _filteredMares {
+    if (_searchQuery.isEmpty) return _mares;
+
+    return _mares.where((mare) {
+      return mare.name
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          mare.isNumber
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          mare.location
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
 
   void _addNewMare(Mare mare) {
     setState(() {
@@ -65,37 +80,72 @@ class _MareListScreenState extends State<MareListScreen> {
     );
   }
 
+  Future<void> _openNewMareForm() async {
+    final newMare = await Navigator.of(context).push<Mare>(
+      MaterialPageRoute(
+        builder: (ctx) => MareFormScreen(
+          onSave: (mare) {
+            Navigator.of(ctx).pop(mare);
+          },
+        ),
+      ),
+    );
+
+    if (newMare != null) _addNewMare(newMare);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hryssur'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final newMare = await Navigator.of(context).push<Mare>(
-                MaterialPageRoute(
-                  builder: (ctx) => MareFormScreen(
-                    onSave: (mare) {
-                      Navigator.of(ctx).pop(mare);
-                    },
-                  ),
-                ),
-              );
+      ),
+      body: Column(
+        children: [
+          ///leit
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Leita...',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
 
-              if (newMare != null) _addNewMare(newMare);
-            },
+          ///listi
+          Expanded(
+            child: _filteredMares.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Engar niðurstöður',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _filteredMares.length,
+                    itemBuilder: (ctx, i) => MareItem(
+                      mare: _filteredMares[i],
+                      onTap: _openMareDetail,
+                    ),
+                  ),
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _mares.length,
-        itemBuilder: (ctx, i) => MareItem(
-          mare: _mares[i],
-          onTap: _openMareDetail,
-        ),
+
+      ///skrá nýja hryssu takki
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openNewMareForm,
+        label: const Text('Skrá nýja hryssu'),
+        icon: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerFloat,
     );
   }
 }

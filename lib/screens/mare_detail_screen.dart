@@ -35,19 +35,13 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
   void _togglePregnant(bool value) {
     setState(() {
       _isPregnant = value;
-      if (value && _confirmedPregnancyDate == null) {
-        _confirmedPregnancyDate = DateTime.now();
-      }
-      if (!value) {
-        _confirmedPregnancyDate = null;
-      }
+      _confirmedPregnancyDate =
+          value ? (_confirmedPregnancyDate ?? DateTime.now()) : null;
     });
   }
 
   void _toggleNeedsVet(bool value) {
-    setState(() {
-      _needsVet = value;
-    });
+    setState(() => _needsVet = value);
   }
 
   void _goBackWithUpdateIfNeeded() {
@@ -57,10 +51,7 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
       confirmedPregnancyDate: _confirmedPregnancyDate,
     );
 
-    if (updated != widget.mare) {
-      widget.onUpdate(updated);
-    }
-
+    if (updated != widget.mare) widget.onUpdate(updated);
     Navigator.of(context).pop();
   }
 
@@ -91,18 +82,51 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
   void _openEditMare() async {
     final updated = await Navigator.of(context).push<Mare>(
       MaterialPageRoute(
-        builder: (newCtx) => MareFormScreen(
+        builder: (ctx) => MareFormScreen(
           existingMare: widget.mare,
-          onSave: (updatedMare) {
-            Navigator.of(newCtx).pop(updatedMare);
-          },
+          onSave: (mare) => Navigator.of(ctx).pop(mare),
         ),
       ),
     );
 
-    if (updated != null) {
-      widget.onUpdate(updated);
-    }
+    if (updated != null) widget.onUpdate(updated);
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(label, style: const TextStyle(color: Colors.black54)),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _card(Widget child) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromARGB(20, 0, 0, 0),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
   }
 
   @override
@@ -110,129 +134,104 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
     final mare = widget.mare;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Upplýsingar um hryssu')),
-      body: Padding(
+      appBar: AppBar(title: const Text('Hryssa frá bæ')),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // === Nafn og helstu upplýsingar ===
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  mare.name,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                Text(mare.isNumber, style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 6),
-                if (mare.microchip != null)
-                  Text('Örmerki: ${mare.microchip!}'),
-                if (mare.owner != null)
-                  Text('Eigandi: ${mare.owner!}'),
-                if (mare.phone != null)
-                  Text('Sími: ${mare.phone!}'),
-                if (mare.email != null)
-                  Text('Netfang: ${mare.email!}'),
-                if (mare.location.isNotEmpty)
-                  Text('Staðsetning: ${mare.location}'),
-                if (mare.extraNumber1 != null)
-                  Text('Annað nr. 1: ${mare.extraNumber1}'),
-                if (mare.extraNumber2 != null)
-                  Text('Annað nr. 2: ${mare.extraNumber2}'),
-              ],
+            ///nafn
+            Text(
+              mare.name,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 12),
 
-            const SizedBox(height: 20),
-
-            // === Mynd af hryssu ===
+            ///mynd
             if (mare.imagePath != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    File(mare.imagePath!),
-                    height: 150,
-                    fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(mare.imagePath!),
+                  height: 160,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            ///uppl um eiganda
+            _card(Column(
+              children: [
+                _infoRow('IS-númer', mare.isNumber),
+                _infoRow('Staðsetning', mare.location),
+                if (mare.owner != null) _infoRow('Eigandi', mare.owner!),
+                if (mare.phone != null) _infoRow('Sími', mare.phone!),
+                if (mare.email != null) _infoRow('Netfang', mare.email!),
+              ],
+            )),
+
+            ///staða
+            _card(Column(
+              children: [
+                SwitchListTile(
+                  title: const Text('Staðfest fyl'),
+                  value: _isPregnant,
+                  activeThumbColor: Colors.green,
+                  onChanged: _togglePregnant,
+                ),
+                if (_isPregnant && _confirmedPregnancyDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Staðfest ${_confirmedPregnancyDate!.day}.'
+                      '${_confirmedPregnancyDate!.month}.'
+                      '${_confirmedPregnancyDate!.year}',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                SwitchListTile(
+                  title: const Text('Þarf dýralækni'),
+                  value: _needsVet,
+                  activeThumbColor: Colors.red,
+                  onChanged: _toggleNeedsVet,
+                ),
+              ],
+            )),
+
+            ///athugasemdir
+            if (mare.comments != null && mare.comments!.isNotEmpty)
+              _card(Text(
+                mare.comments!,
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              )),
+
+            const SizedBox(height: 24),
+
+            ///takkar
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _openEditMare,
+                    child: const Text('Breyta'),
                   ),
                 ),
-              ),
-
-            // === Fyl og dýralæknisstatus ===
-            SwitchListTile(
-              title: const Text('Staðfest fyl'),
-              value: _isPregnant,
-              activeColor: Colors.green,
-              onChanged: _togglePregnant,
-            ),
-            if (_isPregnant && _confirmedPregnancyDate != null)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Staðfest: ${_confirmedPregnancyDate!.day}.${_confirmedPregnancyDate!.month}.${_confirmedPregnancyDate!.year}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _goBackWithUpdateIfNeeded,
+                    child: const Text('Til baka'),
+                  ),
                 ),
-              ),
-            SwitchListTile(
-              title: const Text('Þarf dýralækni'),
-              value: _needsVet,
-              activeColor: Colors.red,
-              onChanged: _toggleNeedsVet,
+              ],
             ),
 
             const SizedBox(height: 12),
 
-            // === Athugasemdir ===
-            if (mare.comments != null && mare.comments!.isNotEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[100],
-                ),
-                child: Text(
-                  mare.comments!,
-                  style: const TextStyle(fontSize: 15, fontStyle: FontStyle.italic),
-                ),
-              ),
-
-            const Spacer(),
-
-            // === Hnappar ===
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _openEditMare,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Breyta'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _goBackWithUpdateIfNeeded,
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('Til baka'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _confirmDelete,
-                  icon: const Icon(Icons.delete),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
-                  label: const Text('Eyða'),
-                ),
-              ],
+            TextButton.icon(
+              onPressed: _confirmDelete,
+              icon: const Icon(Icons.delete, color: Colors.red),
+              label: const Text('Eyða hryssu',
+                  style: TextStyle(color: Colors.red)),
             ),
           ],
         ),

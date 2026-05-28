@@ -42,10 +42,57 @@ class Mare {
     this.otherInfo2,
     this.location,
     this.imagePath,
-    this.comments, required String phone,
+    this.comments,
   });
 
-  ///supabase mapping
+  Mare copyWith({
+    String? id,
+    String? ownerId,
+    DateTime? createdAt,
+    String? name,
+    String? isNumber,
+    String? chipId,
+    String? currentPaddockId,
+    String? currentStallionId,
+    bool? needsVet,
+    bool? pregnancyConfirmed,
+    DateTime? pregnancyConfirmedAt,
+    DateTime? arrivalDate,
+    String? ownerName,
+    String? ownerPhone,
+    String? ownerEmail,
+    String? notes,
+    String? otherInfo1,
+    String? otherInfo2,
+    String? location,
+    String? imagePath,
+    String? comments,
+  }) {
+    return Mare(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      createdAt: createdAt ?? this.createdAt,
+      name: name ?? this.name,
+      isNumber: isNumber ?? this.isNumber,
+      chipId: chipId ?? this.chipId,
+      currentPaddockId: currentPaddockId ?? this.currentPaddockId,
+      currentStallionId: currentStallionId ?? this.currentStallionId,
+      needsVet: needsVet ?? this.needsVet,
+      pregnancyConfirmed: pregnancyConfirmed ?? this.pregnancyConfirmed,
+      pregnancyConfirmedAt: pregnancyConfirmedAt ?? this.pregnancyConfirmedAt,
+      arrivalDate: arrivalDate ?? this.arrivalDate,
+      ownerName: ownerName ?? this.ownerName,
+      ownerPhone: ownerPhone ?? this.ownerPhone,
+      ownerEmail: ownerEmail ?? this.ownerEmail,
+      notes: notes ?? this.notes,
+      otherInfo1: otherInfo1 ?? this.otherInfo1,
+      otherInfo2: otherInfo2 ?? this.otherInfo2,
+      location: location ?? this.location,
+      imagePath: imagePath ?? this.imagePath,
+      comments: comments ?? this.comments,
+    );
+  }
+
   factory Mare.fromMap(Map<String, dynamic> map) {
     return Mare(
       id: map['id'],
@@ -69,7 +116,7 @@ class Mare {
       ownerEmail: map['owner_email'],
       notes: map['notes'],
       otherInfo1: map['other_info_1'],
-      otherInfo2: map['other_info_2'], phone: '',
+      otherInfo2: map['other_info_2'],
     );
   }
 
@@ -84,8 +131,7 @@ class Mare {
       'current_stallion_id': currentStallionId,
       'needs_vet': needsVet,
       'pregnancy_confirmed': pregnancyConfirmed,
-      'pregnancy_confirmed_at':
-          pregnancyConfirmedAt?.toIso8601String(),
+      'pregnancy_confirmed_at': pregnancyConfirmedAt?.toIso8601String(),
       'arrival_date': arrivalDate?.toIso8601String(),
       'owner_name': ownerName,
       'owner_phone': ownerPhone,

@@ -137,7 +137,12 @@ class _MareDetailScreenState extends State<MareDetailScreen> {
     final mare = widget.mare;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Upplýsingar um hryssu')),
+      appBar: AppBar(title: const Text('Upplýsingar um hryssu'),
+      leading: IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: _goBackWithUpdateIfNeeded,
+      ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
